@@ -1,0 +1,92 @@
+"""Resume parsing endpoint."""
+
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from backend.ai.errors import AIError
+from backend.db import get_db
+from backend.schemas import (
+    ResumeParseRequest,
+    ResumeParseResponse,
+    ResumePatchRequest,
+    ResumeDetailResponse,
+)
+from backend.services import ResumeService
+from backend.repositories import ResumeRepository
+
+router = APIRouter(prefix="/resumes", tags=["resumes"])
+
+
+@router.post("/parse", response_model=ResumeParseResponse)
+async def parse_resume(
+    request: ResumeParseRequest,
+    db: AsyncSession = Depends(get_db),
+) -> ResumeParseResponse:
+    """Parse resume text and return structured data.
+
+    - Caches results by content hash
+    - Returns cache_hit=true if result was from cache
+    """
+    service = ResumeService(db)
+    try:
+        result = await service.parse_and_cache(request.resume_text)
+    except AIError as e:
+        raise HTTPException(status_code=502, detail=f"AI provider error: {e}")
+
+    return ResumeParseResponse(
+        resume_id=result.resume_id,
+        resume_hash=result.resume_hash,
+        parsed_resume=result.parsed_resume,
+        cache_hit=result.cache_hit,
+    )
+
+
+@router.get("/{resume_id}", response_model=ResumeDetailResponse)
+async def get_resume(
+    resume_id: UUID,
+    db: AsyncSession = Depends(get_db),
+) -> ResumeDetailResponse:
+    """Get resume by ID with all details."""
+    repo = ResumeRepository(db)
+    resume = await repo.get_by_id(resume_id)
+    if resume is None:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    return ResumeDetailResponse(
+        id=resume.id,
+        source_text=resume.source_text,
+        content_hash=resume.content_hash,
+        parsed_data=resume.get_parsed_data(),
+        created_at=resume.created_at,
+        parsed_at=resume.parsed_at,
+    )
+
+
+@router.patch("/{resume_id}", response_model=ResumeDetailResponse)
+async def update_resume_parsed_data(
+    resume_id: UUID,
+    request: ResumePatchRequest,
+    db: AsyncSession = Depends(get_db),
+) -> ResumeDetailResponse:
+    """Update parsed data for a resume.
+
+    Allows frontend to save edited structured resume fields.
+    This is separate from the wizard navigation (Next button).
+    """
+    repo = ResumeRepository(db)
+    resume = await repo.update_parsed_data(resume_id, request.parsed_data)
+    if resume is None:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    await db.commit()
+    
+    return ResumeDetailResponse(
+        id=resume.id,
+        source_text=resume.source_text,
+        content_hash=resume.content_hash,
+        parsed_data=resume.get_parsed_data(),
+        created_at=resume.created_at,
+        parsed_at=resume.parsed_at,
+    )

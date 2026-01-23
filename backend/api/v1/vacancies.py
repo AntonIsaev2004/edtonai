@@ -1,0 +1,92 @@
+"""Vacancy parsing endpoint."""
+
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from backend.ai.errors import AIError
+from backend.db import get_db
+from backend.schemas import (
+    VacancyParseRequest,
+    VacancyParseResponse,
+    VacancyPatchRequest,
+    VacancyDetailResponse,
+)
+from backend.services import VacancyService
+from backend.repositories import VacancyRepository
+
+router = APIRouter(prefix="/vacancies", tags=["vacancies"])
+
+
+@router.post("/parse", response_model=VacancyParseResponse)
+async def parse_vacancy(
+    request: VacancyParseRequest,
+    db: AsyncSession = Depends(get_db),
+) -> VacancyParseResponse:
+    """Parse vacancy text and return structured data.
+
+    - Caches results by content hash
+    - Returns cache_hit=true if result was from cache
+    """
+    service = VacancyService(db)
+    try:
+        result = await service.parse_and_cache(request.vacancy_text)
+    except AIError as e:
+        raise HTTPException(status_code=502, detail=f"AI provider error: {e}")
+
+    return VacancyParseResponse(
+        vacancy_id=result.vacancy_id,
+        vacancy_hash=result.vacancy_hash,
+        parsed_vacancy=result.parsed_vacancy,
+        cache_hit=result.cache_hit,
+    )
+
+
+@router.get("/{vacancy_id}", response_model=VacancyDetailResponse)
+async def get_vacancy(
+    vacancy_id: UUID,
+    db: AsyncSession = Depends(get_db),
+) -> VacancyDetailResponse:
+    """Get vacancy by ID with all details."""
+    repo = VacancyRepository(db)
+    vacancy = await repo.get_by_id(vacancy_id)
+    if vacancy is None:
+        raise HTTPException(status_code=404, detail="Vacancy not found")
+    
+    return VacancyDetailResponse(
+        id=vacancy.id,
+        source_text=vacancy.source_text,
+        content_hash=vacancy.content_hash,
+        parsed_data=vacancy.get_parsed_data(),
+        created_at=vacancy.created_at,
+        parsed_at=vacancy.parsed_at,
+    )
+
+
+@router.patch("/{vacancy_id}", response_model=VacancyDetailResponse)
+async def update_vacancy_parsed_data(
+    vacancy_id: UUID,
+    request: VacancyPatchRequest,
+    db: AsyncSession = Depends(get_db),
+) -> VacancyDetailResponse:
+    """Update parsed data for a vacancy.
+
+    Allows frontend to save edited structured vacancy fields.
+    This is separate from the wizard navigation (Next button).
+    """
+    repo = VacancyRepository(db)
+    vacancy = await repo.update_parsed_data(vacancy_id, request.parsed_data)
+    if vacancy is None:
+        raise HTTPException(status_code=404, detail="Vacancy not found")
+    
+    await db.commit()
+    
+    return VacancyDetailResponse(
+        id=vacancy.id,
+        source_text=vacancy.source_text,
+        content_hash=vacancy.content_hash,
+        parsed_data=vacancy.get_parsed_data(),
+        created_at=vacancy.created_at,
+        parsed_at=vacancy.parsed_at,
+    )

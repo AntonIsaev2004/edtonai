@@ -1,0 +1,181 @@
+# POST /v1/resumes/adapt
+
+Адаптация резюме под вакансию по выбранным улучшениям (checkbox_options из analyze_match).
+
+## Endpoint
+
+```
+POST /v1/resumes/adapt
+```
+
+## Request
+
+### Headers
+
+```
+Content-Type: application/json
+```
+
+### Body
+
+```json
+{
+  "resume_id": "uuid (или resume_text)",
+  "vacancy_id": "uuid (или vacancy_text)",
+  "selected_checkbox_ids": ["cb_1", "cb_2"],
+  "base_version_id": "uuid (опционально)",
+  "options": {
+    "language": "ru | en | auto",
+    "template": "default | harvard"
+  }
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `resume_id` | UUID | ✅* | ID резюме из БД |
+| `resume_text` | string | ✅* | Текст резюме (альтернатива resume_id) |
+| `vacancy_id` | UUID | ✅* | ID вакансии из БД |
+| `vacancy_text` | string | ✅* | Текст вакансии (альтернатива vacancy_id) |
+| `selected_checkbox_ids` | list[str] | ✅ | IDs улучшений из analyze_match |
+| `base_version_id` | UUID | ❌ | ID родительской версии (для цепочки) |
+| `options` | object | ❌ | Настройки адаптации |
+
+*Требуется либо `*_id`, либо `*_text` для резюме и вакансии.
+
+### Пример минимального запроса
+
+```json
+{
+  "resume_id": "94367c01-d06c-46ea-99f8-293070552b69",
+  "vacancy_id": "b86a0150-35c8-40a5-a651-c9fdd720310f",
+  "selected_checkbox_ids": ["detail_tech_exp", "add_ceremonies"]
+}
+```
+
+## Response
+
+### Success (200)
+
+```json
+{
+  "version_id": "d97cdd84-505e-47ec-bf0e-2d2a607040aa",
+  "parent_version_id": null,
+  "resume_id": "94367c01-d06c-46ea-99f8-293070552b69",
+  "vacancy_id": "b86a0150-35c8-40a5-a651-c9fdd720310f",
+  "updated_resume_text": "Полный текст адаптированного резюме...",
+  "change_log": [
+    {
+      "checkbox_id": "detail_tech_exp",
+      "what_changed": "Добавлено упоминание Agile-церемоний",
+      "where": "experience",
+      "before_excerpt": "Работал в команде",
+      "after_excerpt": "Работал в кросс-функциональной команде, участвовал в daily standup, sprint planning, retrospective"
+    }
+  ],
+  "applied_checkbox_ids": ["detail_tech_exp", "add_ceremonies"],
+  "safety_notes": [],
+  "cache_hit": false
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `version_id` | UUID | ID созданной версии резюме |
+| `parent_version_id` | UUID? | ID родительской версии (null если первая адаптация) |
+| `resume_id` | UUID | ID базового резюме |
+| `vacancy_id` | UUID | ID целевой вакансии |
+| `updated_resume_text` | string | Полный текст адаптированного резюме |
+| `change_log` | list | Список изменений с деталями |
+| `applied_checkbox_ids` | list[str] | IDs успешно применённых улучшений |
+| `safety_notes` | list[str] | Предупреждения о невозможных изменениях |
+| `cache_hit` | bool | True если результат из кеша |
+
+### ChangeLogEntry Structure
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `checkbox_id` | string | ID улучшения |
+| `what_changed` | string | Описание изменения |
+| `where` | string | Секция: summary, skills, experience, education, other |
+| `before_excerpt` | string? | Фрагмент до изменения |
+| `after_excerpt` | string? | Фрагмент после изменения |
+
+## Pipeline
+
+```
+adapt_resume(resume_id, vacancy_id, selected_checkbox_ids)
+│
+├── 1. Get resume from DB (or parse if text provided)
+├── 2. Get vacancy from DB (or parse if text provided)
+├── 3. Validate base_version_id (if provided, must exist)
+├── 4. Get parsed_resume from cache
+├── 5. Get parsed_vacancy from cache
+├── 6. Get match_analysis from cache
+├── 7. Compute input_hash
+├── 8. Check adapt_resume cache
+│     │
+│     ├── Cache hit → create ResumeVersion → return
+│     │
+│     └── Cache miss ↓
+│
+├── 9. Build prompt with:
+│     - Original resume text
+│     - Parsed resume JSON
+│     - Parsed vacancy JSON
+│     - Analysis with gaps
+│     - Selected checkbox IDs
+│
+├── 10. Call LLM (DeepSeek) with GENERATE_UPDATED_RESUME_PROMPT
+│
+├── 11. Save to ai_result cache
+│
+├── 12. Create ResumeVersion record
+│
+└── 13. Return result
+```
+
+## Caching
+
+Кеш вычисляется по хэшу:
+- Оригинальный текст резюме
+- Parsed resume JSON
+- Parsed vacancy JSON
+- Analysis JSON
+- Sorted selected_checkbox_ids
+- Options (language, template)
+
+Повторный запрос с теми же параметрами вернёт `cache_hit: true`.
+
+## Version History
+
+Каждый вызов создаёт запись в `resume_version`:
+- `parent_version_id` позволяет построить цепочку версий
+- Можно откатиться к предыдущей версии по ID
+- История сохраняется для каждой пары resume + vacancy
+
+## Error Responses
+
+### 422 - Validation Error
+
+```json
+{
+  "detail": [
+    {
+      "type": "missing",
+      "loc": ["body", "selected_checkbox_ids"],
+      "msg": "Field required"
+    }
+  ]
+}
+```
+
+### 500 - Internal Error
+
+```json
+{
+  "detail": "Resume not found: 94367c01-d06c-46ea-99f8-293070552b69"
+}
+```
