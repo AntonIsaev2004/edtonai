@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react'
 
-type ToastType = 'success' | 'error' | 'info'
+export type ToastType = 'success' | 'error' | 'info'
 
 interface Toast {
   id: number
@@ -72,7 +72,6 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useToast() {
   const context = useContext(ToastContext)
   if (!context) {
@@ -84,15 +83,4 @@ export function useToast() {
 // Standalone Toaster component that can be used without context
 export function Toaster() {
   return <ToastProvider>{null}</ToastProvider>
-}
-
-// Global toast function for use outside React components
-let globalShowToast: ((type: ToastType, message: string) => void) | null = null
-
-export function setGlobalToast(fn: (type: ToastType, message: string) => void) {
-  globalShowToast = fn
-}
-
-export function toast(type: ToastType, message: string) {
-  globalShowToast?.(type, message)
 }
