@@ -82,7 +82,6 @@ export function useToast() {
 }
 
 // Standalone Toaster component that can be used without context
-// eslint-disable-next-line react-refresh/only-export-components
 export function Toaster() {
   return <ToastProvider>{null}</ToastProvider>
 }
@@ -90,12 +89,10 @@ export function Toaster() {
 // Global toast function for use outside React components
 let globalShowToast: ((type: ToastType, message: string) => void) | null = null
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function setGlobalToast(fn: (type: ToastType, message: string) => void) {
   globalShowToast = fn
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function toast(type: ToastType, message: string) {
   globalShowToast?.(type, message)
 }
