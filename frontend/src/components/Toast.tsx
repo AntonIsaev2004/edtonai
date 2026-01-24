@@ -72,6 +72,7 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useToast() {
   const context = useContext(ToastContext)
   if (!context) {
@@ -86,6 +87,7 @@ export function Toaster() {
 }
 
 // Global toast function for use outside React components
+// eslint-disable-next-line react-refresh/only-export-components
 let globalShowToast: ((type: ToastType, message: string) => void) | null = null
 
 export function setGlobalToast(fn: (type: ToastType, message: string) => void) {

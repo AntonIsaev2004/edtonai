@@ -204,6 +204,7 @@ export function WizardProvider({ children }: { children: ReactNode }) {
     setCurrentStep(1)
   }, [])
 
+  // eslint-disable-next-line react-refresh/only-export-components
   const value: WizardContextType = {
     state,
     currentStep,

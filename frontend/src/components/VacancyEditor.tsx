@@ -20,7 +20,7 @@ export default function VacancyEditor({ data, onChange, readonly = false }: Vaca
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }))
   }
 
-  const updateField = (field: keyof ParsedVacancy, value: any) => {
+  const updateField = (field: keyof ParsedVacancy, value: string | number | boolean | object) => {
     onChange({ ...data, [field]: value })
   }
 
