@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { FileText, Loader2, ArrowRight, Edit3, Save, Check } from 'lucide-react'
-import { useWizard } from '@/context/WizardContext'
+import { useWizard } from '@/hooks'
 import { parseResume, updateResume } from '@/api'
 import { Button, TextAreaWithCounter } from '@/components'
 import ResumeEditor from '@/components/ResumeEditor'

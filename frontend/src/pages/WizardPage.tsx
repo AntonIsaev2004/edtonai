@@ -1,5 +1,6 @@
 import WizardLayout, { type WizardStep } from '@/components/WizardLayout'
-import { WizardProvider, useWizard } from '@/context/WizardContext'
+import { WizardProvider } from '@/context/WizardContext'
+import { useWizard } from '@/hooks'
 import { Step1Resume, Step2Vacancy, Step3Analysis, Step4Improvement } from './wizard'
 
 const WIZARD_STEPS: WizardStep[] = [

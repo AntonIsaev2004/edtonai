@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { BarChart2, Loader2, ArrowRight, ArrowLeft, AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
-import { useWizard } from '@/context/WizardContext'
+import { useWizard } from '@/hooks'
 import { analyzeMatch } from '@/api'
 import { Button } from '@/components'
 

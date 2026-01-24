@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { Briefcase, Loader2, ArrowRight, ArrowLeft, Edit3, Save, Check } from 'lucide-react'
-import { useWizard } from '@/context/WizardContext'
+import { useWizard } from '@/hooks'
 import { parseVacancy, updateVacancy } from '@/api'
 import { Button, TextAreaWithCounter } from '@/components'
 import VacancyEditor from '@/components/VacancyEditor'

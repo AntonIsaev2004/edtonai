@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { Sparkles, Loader2, ArrowLeft, Copy, RotateCcw, Check, X, AlertTriangle, CheckCircle, XCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react'
-import { useWizard } from '@/context/WizardContext'
+import { useWizard } from '@/hooks'
 import { adaptResume, createVersion, analyzeMatch } from '@/api'
 import { Button, CheckboxList, ConfirmDialog } from '@/components'
 import type { ChangeLogEntry, SelectedImprovement } from '@/api'

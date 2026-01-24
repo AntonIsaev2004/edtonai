@@ -76,7 +76,7 @@ const initialState: WizardState = {
   changeLog: [],
 }
 
-const WizardContext = createContext<WizardContextType | null>(null)
+export const WizardContext = createContext<WizardContextType | null>(null)
 
 export function WizardProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<WizardState>(initialState)
@@ -228,10 +228,4 @@ export function WizardProvider({ children }: { children: ReactNode }) {
   return <WizardContext.Provider value={value}>{children}</WizardContext.Provider>
 }
 
-export function useWizard() {
-  const context = useContext(WizardContext)
-  if (!context) {
-    throw new Error('useWizard must be used within a WizardProvider')
-  }
-  return context
-}
+export type { WizardContextType }

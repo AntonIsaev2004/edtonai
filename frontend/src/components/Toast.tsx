@@ -13,7 +13,7 @@ interface ToastContextValue {
   showToast: (type: ToastType, message: string) => void
 }
 
-const ToastContext = createContext<ToastContextValue | null>(null)
+export const ToastContext = createContext<ToastContextValue | null>(null)
 
 let toastId = 0
 
@@ -70,14 +70,6 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
       </button>
     </div>
   )
-}
-
-export function useToast() {
-  const context = useContext(ToastContext)
-  if (!context) {
-    throw new Error('useToast must be used within ToastProvider')
-  }
-  return context
 }
 
 // Standalone Toaster component that can be used without context
