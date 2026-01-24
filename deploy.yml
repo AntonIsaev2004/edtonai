@@ -18,10 +18,15 @@
         msg: "Docker is not installed. Please install Docker first."
       when: docker_check.rc != 0
     
-    - name: Ensure app directory exists
-      file:
+    - name: Check if app directory exists
+      stat:
         path: "{{ app_dir }}"
-        state: directory
+      register: app_dir_stat
+    
+    - name: Fail if app directory does not exist
+      fail:
+        msg: "App directory {{ app_dir }} does not exist. Please clone the repository first."
+      when: not app_dir_stat.stat.exists
     
     - name: Pull latest changes from GitHub
       command: "git -C {{ app_dir }} pull origin main"
