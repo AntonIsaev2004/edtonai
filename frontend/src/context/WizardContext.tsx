@@ -229,6 +229,7 @@ export function WizardProvider({ children }: { children: ReactNode }) {
   return <WizardContext.Provider value={value}>{children}</WizardContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useWizard() {
   const context = useContext(WizardContext)
   if (!context) {
