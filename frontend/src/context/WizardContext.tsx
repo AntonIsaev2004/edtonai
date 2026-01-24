@@ -1,10 +1,11 @@
-import { createContext, useContext, useState, ReactNode, useCallback } from 'react'
+import { useState, ReactNode, useCallback } from 'react'
 import type {
   ParsedResume,
   ParsedVacancy,
   MatchAnalysis,
   ChangeLogEntry,
 } from '@/api'
+import { WizardContext, type WizardContextType, initialWizardState } from './WizardContextTypes'
 
 interface WizardState {
   // Step 1 - Resume
@@ -20,7 +21,7 @@ interface WizardState {
   // Step 3 - Analysis
   analysis: MatchAnalysis | null
   analysisId: string | null
-  previousScore: number | null  // Store score before improvement for comparison
+  previousScore: number | null
   
   // Step 4 - Improvement
   selectedCheckboxes: string[]
@@ -28,55 +29,7 @@ interface WizardState {
   changeLog: ChangeLogEntry[]
 }
 
-interface WizardContextType {
-  state: WizardState
-  currentStep: number
-  setCurrentStep: (step: number) => void
-  
-  // Step 1 actions
-  setResumeText: (text: string) => void
-  setResumeData: (id: string, parsed: ParsedResume) => void
-  updateParsedResume: (parsed: ParsedResume) => void
-  
-  // Step 2 actions
-  setVacancyText: (text: string) => void
-  setVacancyData: (id: string, parsed: ParsedVacancy) => void
-  updateParsedVacancy: (parsed: ParsedVacancy) => void
-  
-  // Step 3 actions
-  setAnalysis: (analysisId: string, analysis: MatchAnalysis) => void
-  
-  // Step 4 actions
-  setSelectedCheckboxes: (ids: string[]) => void
-  toggleCheckbox: (id: string) => void
-  setResult: (text: string, changeLog: ChangeLogEntry[]) => void
-  applyImprovedResume: (newResumeText: string) => void  // Make improved resume the new base
-  
-  // Navigation
-  canGoToStep: (step: number) => boolean
-  goToNextStep: () => void
-  goToPrevStep: () => void
-  
-  // Reset
-  reset: () => void
-}
-
-const initialState: WizardState = {
-  resumeText: '',
-  resumeId: null,
-  parsedResume: null,
-  vacancyText: '',
-  vacancyId: null,
-  parsedVacancy: null,
-  analysis: null,
-  analysisId: null,
-  previousScore: null,
-  selectedCheckboxes: [],
-  resultText: '',
-  changeLog: [],
-}
-
-export const WizardContext = createContext<WizardContextType | null>(null)
+const initialState: WizardState = initialWizardState
 
 export function WizardProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<WizardState>(initialState)
