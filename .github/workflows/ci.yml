@@ -73,7 +73,7 @@ jobs:
       
       - name: Run Ansible playbook
         run: |
-          ansible-playbook -i inventory.ini deploy.yml -v
+          EDTONAI_PATH=/Users/antonisaev/edtonai ansible-playbook -i inventory.ini deploy.yml -v
       
       - name: Cleanup SSH key
         if: always()
