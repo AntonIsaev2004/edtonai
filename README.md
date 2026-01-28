@@ -9,6 +9,7 @@
 - **Docker** и **Docker Compose** (рекомендуется для production)
 - Или локально: **Python 3.11+**, **Node.js 18+**, **PostgreSQL 16**
 - **API ключ DeepSeek** (получить на https://platform.deepseek.com)
+- **Supabase** проект (URL и Anon Key, получить на https://supabase.com)
 
 ### Запуск с Docker (рекомендуется)
 
@@ -28,10 +29,14 @@ cp .env.example .env
 Отредактируй `.env` и укажи:
 - `POSTGRES_PASSWORD` — надежный пароль для БД
 - `DEEPSEEK_API_KEY` — твой API-ключ DeepSeek
+- `VITE_SUPABASE_URL` — твой URL проекта Supabase
+- `VITE_SUPABASE_ANON_KEY` — твой Anon ключ Supabase
 
 ```env
 POSTGRES_PASSWORD=your_secure_password_here
 DEEPSEEK_API_KEY=sk-your-api-key-here
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 #### 3. Запусти сервисы

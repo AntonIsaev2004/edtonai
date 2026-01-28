@@ -10,7 +10,12 @@ from pydantic import BaseModel, Field
 class VacancyParseRequest(BaseModel):
     """Request to parse a vacancy."""
 
-    vacancy_text: str = Field(..., min_length=10, description="Raw vacancy text")
+    vacancy_text: Optional[str] = Field(None, description="Raw vacancy text")
+    url: Optional[str] = Field(None, description="URL to fetch vacancy from")
+    
+    # Custom validator could be added in pydantic v2 with @model_validator, 
+    # but for simplicity we'll handle logical validation in the service/endpoint.
+
 
 
 class VacancyParseResponse(BaseModel):

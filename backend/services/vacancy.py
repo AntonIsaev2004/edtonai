@@ -8,7 +8,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.ai import DeepSeekProvider
+from backend.ai.factory import get_ai_provider
 from backend.core.config import settings
 from backend.prompts import PARSE_VACANCY_PROMPT
 from backend.repositories import VacancyRepository, AIResultRepository
@@ -34,7 +34,7 @@ class VacancyService:
         self.session = session
         self.vacancy_repo = VacancyRepository(session)
         self.ai_result_repo = AIResultRepository(session)
-        self.ai_provider = DeepSeekProvider()
+        self.ai_provider = get_ai_provider()
         self.logger = logging.getLogger(__name__)
 
     async def parse_and_cache(self, vacancy_text: str) -> VacancyParseResult:

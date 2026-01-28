@@ -1,32 +1,55 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
-import { WizardPage, History, Compare, Workspace, HomePage, IdealResumePage } from './pages'
+import { WizardPage, History, Compare, Workspace, HomePage, IdealResumePage, LoginPage, RegisterPage } from './pages'
+import LandingPage from './pages/LandingPage'
 import { Toaster } from './components/Toast'
+import { AuthProvider } from './context/AuthContext'
+import RequireAuth from './components/RequireAuth'
 
 function App() {
   return (
-    <>
+    <AuthProvider>
       <Routes>
-        {/* Home page - mode selection */}
-        <Route path="/" element={<HomePage />} />
-        
-        {/* Wizard as main flow - no Layout wrapper (has its own) */}
-        <Route path="/wizard" element={<WizardPage />} />
-        
-        {/* Ideal resume generation */}
-        <Route path="/ideal-resume" element={<IdealResumePage />} />
-        
-        {/* Other pages with Layout */}
+        {/* Public routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+
+        {/* Protected routes */}
+        <Route path="/wizard" element={
+          <RequireAuth>
+            <WizardPage />
+          </RequireAuth>
+        } />
+
+        <Route path="/ideal-resume" element={
+          <RequireAuth>
+            <IdealResumePage />
+          </RequireAuth>
+        } />
+
         <Route element={<Layout />}>
-          <Route path="workspace" element={<Workspace />} />
-          <Route path="history" element={<History />} />
-          <Route path="compare" element={<Compare />} />
+          <Route path="workspace" element={
+            <RequireAuth>
+              <Workspace />
+            </RequireAuth>
+          } />
+          <Route path="history" element={
+            <RequireAuth>
+              <History />
+            </RequireAuth>
+          } />
+          <Route path="compare" element={
+            <RequireAuth>
+              <Compare />
+            </RequireAuth>
+          } />
         </Route>
-        
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Toaster />
-    </>
+    </AuthProvider>
   )
 }
 

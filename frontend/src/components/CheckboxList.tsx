@@ -80,19 +80,19 @@ export default function CheckboxList({
 
   if (options.length === 0) {
     return (
-      <div className="p-8 text-center text-gray-500">
+      <div className="p-8 text-center text-slate-400">
         Нет доступных улучшений
       </div>
     )
   }
 
   return (
-    <div className="divide-y divide-gray-100">
+    <div className="divide-y divide-slate-700/50">
       {categoryOrder
         .filter((cat) => grouped[cat]?.length > 0)
         .map((category) => (
           <div key={category} className="p-4">
-            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">
               {categoryLabels[category] || category}
             </h4>
             <div className="space-y-2">
@@ -105,13 +105,12 @@ export default function CheckboxList({
                 return (
                   <div
                     key={option.id}
-                    className={`rounded-lg border transition-all ${
-                      isSelected
-                        ? option.requires_user_input
-                          ? 'border-amber-300 bg-amber-50'
-                          : 'border-blue-300 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50'
-                    }`}
+                    className={`rounded-lg border transition-all ${isSelected
+                      ? option.requires_user_input
+                        ? 'border-amber-500/50 bg-amber-900/10'
+                        : 'border-blue-500/50 bg-blue-900/10'
+                      : 'border-slate-700 hover:border-slate-600 bg-slate-800 hover:bg-slate-700'
+                      }`}
                   >
                     {/* Main checkbox row */}
                     <label className="flex items-start gap-3 p-3 cursor-pointer">
@@ -122,46 +121,44 @@ export default function CheckboxList({
                         className="sr-only"
                       />
                       <div
-                        className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center mt-0.5 transition-colors ${
-                          isSelected
-                            ? option.requires_user_input
-                              ? 'bg-amber-500 border-amber-500'
-                              : 'bg-blue-600 border-blue-600'
-                            : 'border-gray-300 bg-white'
-                        }`}
+                        className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center mt-0.5 transition-colors ${isSelected
+                          ? option.requires_user_input
+                            ? 'bg-amber-600 border-amber-600'
+                            : 'bg-blue-600 border-blue-600'
+                          : 'border-slate-500 bg-slate-800'
+                          }`}
                       >
                         {isSelected && <Check className="w-3 h-3 text-white" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-medium text-gray-900">
+                          <span className="text-sm font-medium text-white">
                             {option.label}
                           </span>
                           <span
-                            className={`text-xs px-1.5 py-0.5 rounded ${
-                              option.impact === 'high'
-                                ? 'bg-red-100 text-red-700'
-                                : option.impact === 'medium'
-                                  ? 'bg-yellow-100 text-yellow-700'
-                                  : 'bg-gray-100 text-gray-600'
-                            }`}
+                            className={`text-xs px-1.5 py-0.5 rounded ${option.impact === 'high'
+                              ? 'bg-red-900/30 text-red-300'
+                              : option.impact === 'medium'
+                                ? 'bg-yellow-900/30 text-yellow-300'
+                                : 'bg-slate-700 text-slate-300'
+                              }`}
                           >
                             {option.impact === 'high' ? 'важно' : option.impact === 'medium' ? 'средне' : 'низкий'}
                           </span>
                           {option.requires_user_input && (
-                            <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-amber-900/30 text-amber-300">
                               нужен ваш ввод
                             </span>
                           )}
                           {isSelected && willUseAi && (
-                            <span className="text-xs px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 flex items-center gap-1">
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-purple-900/30 text-purple-300 flex items-center gap-1">
                               <Sparkles className="w-3 h-3" />
                               ИИ сгенерирует
                             </span>
                           )}
                         </div>
                         {option.description && (
-                          <p className="text-xs text-gray-500 mt-1">{option.description}</p>
+                          <p className="text-xs text-slate-400 mt-1">{option.description}</p>
                         )}
                       </div>
 
@@ -192,11 +189,11 @@ export default function CheckboxList({
                           value={userInputs[option.id] || ''}
                           onChange={(e) => handleInputChange(option.id, e.target.value)}
                           placeholder={option.user_input_placeholder || 'Опишите ваш опыт...'}
-                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none"
+                          className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none placeholder-slate-500"
                           rows={3}
                         />
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-slate-400">
                             {hasUserInput
                               ? 'Используем ваш текст'
                               : willUseAi
@@ -207,11 +204,10 @@ export default function CheckboxList({
                             <button
                               type="button"
                               onClick={() => handleAiGenerate(option.id)}
-                              className={`flex items-center gap-1 px-2 py-1 text-xs rounded transition-colors ${
-                                willUseAi
-                                  ? 'bg-purple-100 text-purple-700 border border-purple-300'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-purple-600 border border-gray-200'
-                              }`}
+                              className={`flex items-center gap-1 px-2 py-1 text-xs rounded transition-colors ${willUseAi
+                                ? 'bg-purple-900/30 text-purple-300 border border-purple-500/50'
+                                : 'bg-slate-700 text-slate-300 hover:bg-purple-900/20 hover:text-purple-300 border border-slate-600'
+                                }`}
                             >
                               <Sparkles className="w-3 h-3" />
                               Исправить с помощью ИИ

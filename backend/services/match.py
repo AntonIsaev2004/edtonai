@@ -9,7 +9,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.ai import DeepSeekProvider
+from backend.ai.factory import get_ai_provider
 from backend.core.config import settings
 from backend.prompts import ANALYZE_MATCH_PROMPT
 from backend.repositories import AIResultRepository
@@ -32,7 +32,7 @@ class MatchService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.ai_result_repo = AIResultRepository(session)
-        self.ai_provider = DeepSeekProvider()
+        self.ai_provider = get_ai_provider()
         self.logger = logging.getLogger(__name__)
 
     def _compute_match_hash(

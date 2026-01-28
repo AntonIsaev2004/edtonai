@@ -9,7 +9,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.ai import DeepSeekProvider
+from backend.ai.factory import get_ai_provider
 from backend.core.config import settings
 from backend.prompts import IDEAL_RESUME_PROMPT
 from backend.repositories import (
@@ -45,7 +45,7 @@ class IdealResumeService:
         self.vacancy_repo = VacancyRepository(session)
         self.ideal_repo = IdealResumeRepository(session)
         self.vacancy_service = VacancyService(session)
-        self.ai_provider = DeepSeekProvider()
+        self.ai_provider = get_ai_provider()
         self.logger = logging.getLogger(__name__)
 
     def _compute_ideal_hash(

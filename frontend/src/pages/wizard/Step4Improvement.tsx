@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { Sparkles, Loader2, ArrowLeft, Copy, RotateCcw, Check, X, AlertTriangle, CheckCircle, XCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { Sparkles, Loader2, ArrowLeft, Copy, RotateCcw, Check, X, AlertTriangle, CheckCircle, XCircle, TrendingUp, TrendingDown, Minus, Eye, DownloadCloud } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useWizard } from '@/context/WizardContext'
 import { adaptResume, createVersion, analyzeMatch } from '@/api'
 import { Button, CheckboxList, ConfirmDialog } from '@/components'
+import PdfPreview from '@/components/pdf/PdfPreview'
 import type { ChangeLogEntry, SelectedImprovement } from '@/api'
 
 type Mode = 'checkboxes' | 'review' | 'analysis'
@@ -13,6 +15,7 @@ interface PendingChange extends ChangeLogEntry {
 }
 
 export default function Step4Improvement() {
+  const { t } = useTranslation()
   const {
     state,
     setSelectedCheckboxes,
@@ -24,10 +27,11 @@ export default function Step4Improvement() {
   } = useWizard()
   const [mode, setMode] = useState<Mode>(state.resultText ? 'review' : 'checkboxes')
   const [showSaveDialog, setShowSaveDialog] = useState(false)
+  const [showPdfPreview, setShowPdfPreview] = useState(false)
   const [versionTitle, setVersionTitle] = useState('')
   const [copied, setCopied] = useState(false)
   const [pendingChanges, setPendingChanges] = useState<PendingChange[]>([])
-  
+
   // User inputs for checkboxes that require_user_input
   const [userInputs, setUserInputs] = useState<Record<string, string>>({})
   // AI generate flags for checkboxes that require_user_input
@@ -41,7 +45,7 @@ export default function Step4Improvement() {
       const option = checkboxOptions.find((o) => o.id === checkboxId)
       const userInput = userInputs[checkboxId]
       const aiGenerate = aiGenerateFlags[checkboxId] || false
-      
+
       return {
         checkbox_id: checkboxId,
         user_input: userInput || null,
@@ -171,49 +175,76 @@ export default function Step4Improvement() {
   const pendingCount = pendingChanges.filter((c) => c.status === 'pending').length
   const confirmedCount = pendingChanges.filter((c) => c.status === 'confirmed').length
   const allReviewed = pendingChanges.length > 0 && pendingCount === 0
-  
+
   const analysis = state.analysis
-  const scoreDiff = state.previousScore !== null && analysis 
-    ? analysis.score - state.previousScore 
+  const scoreDiff = state.previousScore !== null && analysis
+    ? analysis.score - state.previousScore
     : null
+
+  const isProcessing = saveVersionMutation.isPending || reanalyzeMutation.isPending
+
+  if (isProcessing) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 min-h-[400px] space-y-6">
+        <div className="relative">
+          <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-full" />
+          <Loader2 className="w-16 h-16 text-blue-500 animate-spin relative z-10" />
+        </div>
+        <div className="text-center space-y-2">
+          <h3 className="text-xl font-medium text-white">
+            {saveVersionMutation.isPending ? 'Применяем изменения...' : 'Анализируем результат...'}
+          </h3>
+          <p className="text-slate-400 max-w-md mx-auto">
+            Пожалуйста, подождите. Мы обновляем ваше резюме и проверяем его соответствие вакансии.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {mode === 'analysis' ? 'Результат улучшения' : 'Улучшение резюме'}
+          <h1 className="text-2xl font-bold text-white">
+            {mode === 'analysis' ? t('wizard.step4.result_title') : t('wizard.step4.title')}
           </h1>
           <p className="text-gray-500 mt-1">
             {mode === 'checkboxes'
-              ? 'Выберите улучшения для применения к резюме'
+              ? t('wizard.step4.description')
               : mode === 'review'
-                ? 'Подтвердите или отклоните каждое изменение'
-                : 'Анализ обновлённого резюме'}
+                ? t('wizard.step4.result_description')
+                : t('wizard.step3.description')}
           </p>
         </div>
+        {mode === 'analysis' && (
+          <Button onClick={() => setShowPdfPreview(true)}>
+            <Eye className="w-4 h-4 mr-2" />
+            {t('wizard.step4.preview_pdf')}
+          </Button>
+        )}
       </div>
 
       {mode === 'checkboxes' ? (
         <div className="space-y-4">
           {/* Selection controls */}
-          <div className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-3">
-            <span className="text-sm text-gray-600">
-              Выбрано: {selectedCount} из {totalCount}
+          <div className="flex items-center justify-between bg-slate-800 border border-slate-700 rounded-lg p-3">
+            <span className="text-sm text-slate-300">
+              {t('wizard.step4.selected')}: {selectedCount} / {totalCount}
             </span>
             <div className="flex gap-2">
               <Button variant="ghost" size="sm" onClick={handleSelectAll}>
-                Выбрать все
+                {t('wizard.step4.select_all')}
               </Button>
               <Button variant="ghost" size="sm" onClick={handleDeselectAll}>
-                Снять выбор
+                {t('wizard.step4.deselect_all')}
               </Button>
             </div>
           </div>
 
           {/* Checkbox list */}
-          <div className="bg-white border border-gray-200 rounded-lg">
+          <div className="bg-slate-800 border border-slate-700 rounded-lg">
             <CheckboxList
               options={checkboxOptions}
               selected={state.selectedCheckboxes}
@@ -237,7 +268,7 @@ export default function Step4Improvement() {
           <div className="flex justify-between pt-4">
             <Button variant="outline" onClick={goToPrevStep}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Назад
+              {t('wizard.step2.back')}
             </Button>
             <Button
               onClick={handleApply}
@@ -247,12 +278,12 @@ export default function Step4Improvement() {
               {adaptMutation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Применение...
+                  {t('wizard.step4.applying')}
                 </>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Применить улучшения ({selectedCount})
+                  {t('wizard.step4.apply_button')} ({selectedCount})
                 </>
               )}
             </Button>
@@ -261,30 +292,29 @@ export default function Step4Improvement() {
       ) : mode === 'review' ? (
         <div className="space-y-4">
           {/* Review status */}
-          <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <span className="text-sm text-blue-700">
-              Подтверждено: {confirmedCount} из {pendingChanges.length}
-              {pendingCount > 0 && ` • Ожидает: ${pendingCount}`}
+          <div className="flex items-center justify-between bg-blue-900/20 border border-blue-500/30 rounded-lg p-3">
+            <span className="text-sm text-blue-300">
+              {t('wizard.step4.confirmed')}: {confirmedCount} / {pendingChanges.length}
+              {pendingCount > 0 && ` • ${t('wizard.step4.pending')}: ${pendingCount}`}
             </span>
             <Button variant="ghost" size="sm" onClick={handleConfirmAll} disabled={pendingCount === 0}>
               <Check className="w-4 h-4 mr-1" />
-              Подтвердить все
+              {t('wizard.step4.confirm_all')}
             </Button>
           </div>
 
           {/* Change review cards */}
           <div className="space-y-3">
-            <h3 className="font-medium text-gray-900">Изменения для подтверждения:</h3>
+            <h3 className="font-medium text-white">{t('wizard.step4.changes_review')}</h3>
             {pendingChanges.map((change, index) => (
               <div
                 key={index}
-                className={`bg-white border rounded-lg p-4 transition-colors ${
-                  change.status === 'confirmed'
-                    ? 'border-green-300 bg-green-50'
-                    : change.status === 'rejected'
-                      ? 'border-red-300 bg-red-50 opacity-60'
-                      : 'border-gray-200'
-                }`}
+                className={`bg-slate-800 border rounded-lg p-4 transition-colors ${change.status === 'confirmed'
+                  ? 'border-green-500/30 bg-green-900/20'
+                  : change.status === 'rejected'
+                    ? 'border-red-500/30 bg-red-900/20 opacity-60'
+                    : 'border-slate-700'
+                  }`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
@@ -294,25 +324,25 @@ export default function Step4Improvement() {
                       </span>
                       {change.status === 'confirmed' && (
                         <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded">
-                          ✓ Подтверждено
+                          ✓ {t('wizard.step4.change_confirmed')}
                         </span>
                       )}
                       {change.status === 'rejected' && (
                         <span className="text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded">
-                          ✗ Отклонено
+                          ✗ {t('wizard.step4.change_rejected')}
                         </span>
                       )}
                     </div>
-                    <p className="text-sm font-medium text-gray-900">{change.what_changed}</p>
+                    <p className="text-sm font-medium text-white">{change.what_changed}</p>
                     {change.before_excerpt && (
                       <div className="mt-2 text-xs">
-                        <span className="text-gray-500">Было: </span>
+                        <span className="text-gray-500">{t('wizard.step4.before')} </span>
                         <span className="text-red-600 line-through">{change.before_excerpt}</span>
                       </div>
                     )}
                     {change.after_excerpt && (
                       <div className="mt-1 text-xs">
-                        <span className="text-gray-500">Стало: </span>
+                        <span className="text-gray-500">{t('wizard.step4.after')} </span>
                         <span className="text-green-600">{change.after_excerpt}</span>
                       </div>
                     )}
@@ -346,7 +376,7 @@ export default function Step4Improvement() {
           <div className="flex justify-between pt-4">
             <Button variant="outline" onClick={handleBackToCheckboxes}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Изменить выбор
+              {t('wizard.step4.back_edit')}
             </Button>
             <Button
               onClick={handleFinalizeChanges}
@@ -354,7 +384,7 @@ export default function Step4Improvement() {
               className="min-w-[200px]"
             >
               <Check className="w-4 h-4 mr-2" />
-              Применить ({confirmedCount})
+              {t('wizard.step4.apply_final')} ({confirmedCount})
             </Button>
           </div>
         </div>
@@ -362,9 +392,9 @@ export default function Step4Improvement() {
         /* mode === 'analysis' - Full analysis view like Step3 */
         <div className="space-y-6">
           {/* Score with comparison */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Новый балл соответствия</h2>
+              <h2 className="text-lg font-semibold">{t('wizard.step4.score_new')}</h2>
               <div className="flex items-center gap-4">
                 {/* Score comparison */}
                 {state.previousScore !== null && scoreDiff !== null && (
@@ -390,13 +420,12 @@ export default function Step4Improvement() {
                   </div>
                 )}
                 <div
-                  className={`text-4xl font-bold ${
-                    analysis && analysis.score >= 70
-                      ? 'text-green-600'
-                      : analysis && analysis.score >= 50
-                        ? 'text-yellow-600'
-                        : 'text-red-600'
-                  }`}
+                  className={`text-4xl font-bold ${analysis && analysis.score >= 70
+                    ? 'text-green-600'
+                    : analysis && analysis.score >= 50
+                      ? 'text-yellow-600'
+                      : 'text-red-600'
+                    }`}
                 >
                   {analysis?.score || 0}
                   <span className="text-lg text-gray-400">/100</span>
@@ -447,8 +476,8 @@ export default function Step4Improvement() {
           {analysis && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Required skills */}
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-3">Обязательные навыки</h3>
+              <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
+                <h3 className="font-medium text-white mb-3">{t('wizard.step3.required_skills')}</h3>
                 <div className="space-y-2">
                   {analysis.matched_required_skills.map((skill) => (
                     <SkillBadge key={skill} skill={skill} matched />
@@ -458,14 +487,14 @@ export default function Step4Improvement() {
                   ))}
                   {analysis.matched_required_skills.length === 0 &&
                     analysis.missing_required_skills.length === 0 && (
-                      <p className="text-sm text-gray-500">Нет данных</p>
+                      <p className="text-sm text-gray-500">{t('wizard.step3.no_data')}</p>
                     )}
                 </div>
               </div>
 
               {/* Preferred skills */}
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-3">Желательные навыки</h3>
+              <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
+                <h3 className="font-medium text-white mb-3">{t('wizard.step3.preferred_skills')}</h3>
                 <div className="space-y-2">
                   {analysis.matched_preferred_skills.map((skill) => (
                     <SkillBadge key={skill} skill={skill} matched />
@@ -484,36 +513,34 @@ export default function Step4Improvement() {
 
           {/* Gaps */}
           {analysis && analysis.gaps.length > 0 && (
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
               <h3 className="font-medium text-gray-900 mb-3">
-                Оставшиеся пробелы ({analysis.gaps.length})
+                {t('wizard.step3.gaps')} ({analysis.gaps.length})
               </h3>
               <div className="space-y-3">
                 {analysis.gaps.map((gap) => (
                   <div
                     key={gap.id}
-                    className={`p-3 rounded-lg border ${
-                      gap.severity === 'high'
-                        ? 'bg-red-50 border-red-200'
-                        : gap.severity === 'medium'
-                          ? 'bg-yellow-50 border-yellow-200'
-                          : 'bg-blue-50 border-blue-200'
-                    }`}
+                    className={`p-3 rounded-lg border ${gap.severity === 'high'
+                      ? 'bg-red-900/20 border-red-500/30'
+                      : gap.severity === 'medium'
+                        ? 'bg-yellow-900/20 border-yellow-500/30'
+                        : 'bg-blue-900/20 border-blue-500/30'
+                      }`}
                   >
                     <div className="flex items-start gap-2">
                       <AlertTriangle
-                        className={`w-4 h-4 mt-0.5 ${
-                          gap.severity === 'high'
-                            ? 'text-red-500'
-                            : gap.severity === 'medium'
-                              ? 'text-yellow-500'
-                              : 'text-blue-500'
-                        }`}
+                        className={`w-4 h-4 mt-0.5 ${gap.severity === 'high'
+                          ? 'text-red-400'
+                          : gap.severity === 'medium'
+                            ? 'text-yellow-400'
+                            : 'text-blue-400'
+                          }`}
                       />
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{gap.message}</p>
+                        <p className="text-sm font-medium text-white">{gap.message}</p>
                         {gap.suggestion && (
-                          <p className="text-sm text-gray-600 mt-1">{gap.suggestion}</p>
+                          <p className="text-sm text-slate-300 mt-1">{gap.suggestion}</p>
                         )}
                         <span className="inline-block mt-1 text-xs text-gray-400">
                           {gap.target_section}
@@ -531,37 +558,52 @@ export default function Step4Improvement() {
             <div className="flex gap-2">
               <Button variant="outline" onClick={reset}>
                 <RotateCcw className="w-4 h-4 mr-2" />
-                Начать заново
+                {t('wizard.step4.start_over')}
               </Button>
-              <Button variant="outline" onClick={handleCopy}>
-                <Copy className="w-4 h-4 mr-2" />
-                {copied ? 'Скопировано!' : 'Копировать резюме'}
+              <Button variant="outline" onClick={() => setShowPdfPreview(true)}>
+                <Eye className="w-4 h-4 mr-2" />
+                {t('wizard.step4.preview_pdf')}
               </Button>
             </div>
-            {analysis && analysis.checkbox_options.length > 0 && (
-              <Button onClick={handleContinueImproving}>
-                <Sparkles className="w-4 h-4 mr-2" />
-                Продолжить улучшение
+            <div className="flex gap-2">
+              {analysis && analysis.checkbox_options.length > 0 && (
+                <Button onClick={handleContinueImproving}>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {t('wizard.step4.continue')}
+                </Button>
+              )}
+              {/* Home button for explicit exit */}
+              <Button variant="secondary" onClick={() => window.location.href = '/'}>
+                {t('common.done', 'Готово')}
               </Button>
-            )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Save dialog */}
+      {/* PDF Preview Dialog (in Analysis mode) - Keeping it here or moving out? 
+                Analysis mode has its own button for PDF. But let's check review mode.
+                Review mode doesn't have PDF button. Checkboxes mode doesn't.
+                So PDF preview is irrelevant for others? 
+                Wait, user might want to see it?
+                Actually, let's keep it global if possible, but the button is only in Analysis.
+                However, ConfirmDialog MUST be global as it's triggered from Review mode.
+            */}
+
+
+      {/* Save dialog - Global */}
       <ConfirmDialog
         isOpen={showSaveDialog}
-        title="Применить изменения"
+        title={t('wizard.step4.apply_final')}
         message={
           <div className="space-y-3">
-            <p>
-              Применить {confirmedCount} подтверждённых изменений? 
-              Обновлённое резюме станет базовым для дальнейших улучшений.
+            <p className="text-slate-300">
+              {t('wizard.step4.final_confirm_message', 'Применить подтверждённые изменения? Обновлённое резюме станет базовым для дальнейших улучшений.')}
             </p>
             <input
               type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Название версии (опционально)"
+              className="w-full px-3 py-2 border border-slate-600 bg-slate-900 text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent placeholder-slate-500"
+              placeholder={t('wizard.step4.version_placeholder', 'Название версии (опционально)')}
               value={versionTitle}
               onChange={(e) => setVersionTitle(e.target.value)}
             />
@@ -571,9 +613,20 @@ export default function Step4Improvement() {
         onConfirm={handleSaveAndAnalyze}
         onClose={() => setShowSaveDialog(false)}
       />
-    </div>
+
+      {/* PDF Preview Dialog - Global */}
+      {
+        showPdfPreview && state.parsedResume && (
+          <PdfPreview
+            data={state.parsedResume}
+            onClose={() => setShowPdfPreview(false)}
+          />
+        )
+      }
+    </div >
   )
 }
+
 
 // ========================================
 // Helper Components
@@ -593,18 +646,17 @@ function ScoreCard({
   const percentage = (value / maxValue) * 100
 
   return (
-    <div className="bg-gray-50 rounded-lg p-3">
+    <div className="bg-slate-800 rounded-lg p-3">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-sm text-gray-600">{label}</span>
+        <span className="text-sm text-slate-400">{label}</span>
         <span className="text-sm font-medium">
           {value}/{maxValue}
         </span>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-2">
         <div
-          className={`h-2 rounded-full ${
-            percentage >= 70 ? 'bg-green-500' : percentage >= 50 ? 'bg-yellow-500' : 'bg-red-500'
-          }`}
+          className={`h-2 rounded-full ${percentage >= 70 ? 'bg-green-500' : percentage >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+            }`}
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -616,9 +668,8 @@ function ScoreCard({
 function SkillBadge({ skill, matched }: { skill: string; matched: boolean }) {
   return (
     <div
-      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${
-        matched ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
-      }`}
+      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${matched ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+        }`}
     >
       {matched ? (
         <CheckCircle className="w-4 h-4 text-green-500" />

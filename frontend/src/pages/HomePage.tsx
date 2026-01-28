@@ -1,20 +1,25 @@
 import { useNavigate } from 'react-router-dom'
 import { FileText, Sparkles, ArrowRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 export default function HomePage() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="max-w-4xl w-full">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-12 relative">
+          <div className="absolute right-0 top-0">
+            <LanguageSwitcher />
+          </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            EdtonAI - Оптимизатор резюме
+            {t('header.title')}
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Используйте возможности ИИ для создания резюме, которое пройдёт ATS-системы 
-            и привлечёт внимание рекрутеров
+            {t('home.subtitle')}
           </p>
         </div>
 
@@ -30,37 +35,36 @@ export default function HomePage() {
                 <FileText className="w-7 h-7 text-blue-600 group-hover:text-white transition-colors" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">Адаптация под вакансию</h2>
-                <span className="text-sm text-blue-600 font-medium">Пошаговый мастер</span>
+                <h2 className="text-xl font-semibold text-gray-900">{t('home.title')}</h2>
+                <span className="text-sm text-blue-600 font-medium">{t('wizard.steps.improvement')}</span>
               </div>
             </div>
-            
+
             <p className="text-gray-600 mb-6">
-              Загрузите резюме и описание вакансии. ИИ проанализирует соответствие 
-              и предложит конкретные улучшения для максимальной релевантности.
+              {t('home.subtitle')}
             </p>
 
             <div className="space-y-2 mb-6">
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <span className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xs font-medium">1</span>
-                Загрузка резюме
+                {t('wizard.steps.resume')}
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <span className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xs font-medium">2</span>
-                Загрузка вакансии
+                {t('wizard.steps.vacancy')}
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <span className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xs font-medium">3</span>
-                Анализ соответствия
+                {t('wizard.steps.analysis')}
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <span className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xs font-medium">4</span>
-                Улучшения и результат
+                {t('wizard.steps.improvement')}
               </div>
             </div>
 
             <div className="flex items-center text-blue-600 font-medium group-hover:gap-2 transition-all">
-              Начать <ArrowRight className="w-4 h-4 ml-1" />
+              {t('home.start_button')} <ArrowRight className="w-4 h-4 ml-1" />
             </div>
           </button>
 
@@ -74,44 +78,43 @@ export default function HomePage() {
                 <Sparkles className="w-7 h-7 text-purple-600 group-hover:text-white transition-colors" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">Идеальное резюме</h2>
-                <span className="text-sm text-purple-600 font-medium">Генерация с нуля</span>
+                <h2 className="text-xl font-semibold text-gray-900">{t('home.ideal_title')}</h2>
+                <span className="text-sm text-purple-600 font-medium">{t('home.ideal_subtitle')}</span>
               </div>
             </div>
-            
+
             <p className="text-gray-600 mb-6">
-              Создайте идеальное резюме для целевой вакансии. ИИ сгенерирует 
-              структуру и контент, оптимизированные под требования работодателя.
+              {t('home.ideal_description')}
             </p>
 
             <div className="space-y-2 mb-6">
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <span className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 text-xs font-medium">1</span>
-                Ваши данные и опыт
+                {t('home.steps_data')}
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <span className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 text-xs font-medium">2</span>
-                Целевая вакансия
+                {t('home.steps_vacancy')}
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <span className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 text-xs font-medium">3</span>
-                Генерация резюме
+                {t('home.steps_generation')}
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <span className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 text-xs font-medium">4</span>
-                Редактирование
+                {t('home.steps_editing')}
               </div>
             </div>
 
             <div className="flex items-center text-purple-600 font-medium group-hover:gap-2 transition-all">
-              Начать <ArrowRight className="w-4 h-4 ml-1" />
+              {t('home.start_button')} <ArrowRight className="w-4 h-4 ml-1" />
             </div>
           </button>
         </div>
 
         {/* Footer */}
         <p className="text-center text-gray-500 text-sm mt-8">
-          Powered by AI • Ваши данные не сохраняются после сессии
+          {t('common.footer')}
         </p>
       </div>
     </div>

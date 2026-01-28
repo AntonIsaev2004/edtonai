@@ -93,20 +93,20 @@ export default function IdealResumePage() {
   const isGenerateDisabled = vacancyText.length < 10 || vacancyText.length > MAX_CHARS
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100">
+    <div className="min-h-screen bg-slate-900 text-white">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <header className="bg-slate-900/80 backdrop-blur-lg border-b border-slate-800 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={handleBack}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
+              <ArrowLeft className="w-5 h-5 text-slate-400 hover:text-white" />
             </button>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Идеальное резюме</h1>
-              <p className="text-sm text-gray-500">
+              <h1 className="text-xl font-bold text-white">Идеальное резюме</h1>
+              <p className="text-sm text-slate-400">
                 {mode === 'input' ? 'Вставьте вакансию для генерации' : 'Результат генерации'}
               </p>
             </div>
@@ -131,7 +131,7 @@ export default function IdealResumePage() {
         {mode === 'input' ? (
           <div className="space-y-6">
             {/* Vacancy input */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-slate-800 rounded-xl shadow-lg border border-slate-700 p-6">
               <TextAreaWithCounter
                 value={vacancyText}
                 onChange={setVacancyText}
@@ -151,25 +151,25 @@ Requirements:
             </div>
 
             {/* Options panel */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-slate-800 rounded-xl shadow-lg border border-slate-700 overflow-hidden">
               <button
                 onClick={() => setShowOptions(!showOptions)}
-                className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-700 transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-gray-500" />
-                  <span className="font-medium text-gray-900">Настройки генерации</span>
+                  <Settings className="w-5 h-5 text-slate-400" />
+                  <span className="font-medium text-white">Настройки генерации</span>
                 </div>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-slate-500">
                   {showOptions ? 'Скрыть' : 'Показать'}
                 </span>
               </button>
-              
+
               {showOptions && (
-                <div className="px-6 pb-6 space-y-4 border-t border-gray-100 pt-4">
+                <div className="px-6 pb-6 space-y-4 border-t border-slate-700 pt-4">
                   {/* Language */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
                       Язык резюме
                     </label>
                     <div className="flex gap-2">
@@ -181,11 +181,10 @@ Requirements:
                         <button
                           key={opt.label}
                           onClick={() => setOptions((p) => ({ ...p, language: opt.value }))}
-                          className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                            options.language === opt.value
-                              ? 'bg-purple-100 text-purple-700 border-2 border-purple-300'
-                              : 'bg-gray-100 text-gray-700 border-2 border-transparent hover:bg-gray-200'
-                          }`}
+                          className={`px-4 py-2 rounded-lg text-sm transition-colors ${options.language === opt.value
+                            ? 'bg-brand-900/50 text-brand-300 border-2 border-brand-500/50'
+                            : 'bg-slate-900 text-slate-400 border-2 border-transparent hover:bg-slate-700'
+                            }`}
                         >
                           {opt.label}
                         </button>
@@ -195,7 +194,7 @@ Requirements:
 
                   {/* Template */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
                       Шаблон
                     </label>
                     <div className="flex gap-2">
@@ -206,11 +205,10 @@ Requirements:
                         <button
                           key={opt.label}
                           onClick={() => setOptions((p) => ({ ...p, template: opt.value }))}
-                          className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                            options.template === opt.value
-                              ? 'bg-purple-100 text-purple-700 border-2 border-purple-300'
-                              : 'bg-gray-100 text-gray-700 border-2 border-transparent hover:bg-gray-200'
-                          }`}
+                          className={`px-4 py-2 rounded-lg text-sm transition-colors ${options.template === opt.value
+                            ? 'bg-brand-900/50 text-brand-300 border-2 border-brand-500/50'
+                            : 'bg-slate-900 text-slate-400 border-2 border-transparent hover:bg-slate-700'
+                            }`}
                         >
                           {opt.label}
                         </button>
@@ -220,7 +218,7 @@ Requirements:
 
                   {/* Seniority */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
                       Уровень опыта
                     </label>
                     <div className="flex gap-2 flex-wrap">
@@ -233,11 +231,10 @@ Requirements:
                         <button
                           key={opt.label}
                           onClick={() => setOptions((p) => ({ ...p, seniority: opt.value }))}
-                          className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                            options.seniority === opt.value
-                              ? 'bg-purple-100 text-purple-700 border-2 border-purple-300'
-                              : 'bg-gray-100 text-gray-700 border-2 border-transparent hover:bg-gray-200'
-                          }`}
+                          className={`px-4 py-2 rounded-lg text-sm transition-colors ${options.seniority === opt.value
+                            ? 'bg-brand-900/50 text-brand-300 border-2 border-brand-500/50'
+                            : 'bg-slate-900 text-slate-400 border-2 border-transparent hover:bg-slate-700'
+                            }`}
                         >
                           {opt.label}
                         </button>
@@ -250,7 +247,7 @@ Requirements:
 
             {/* Error */}
             {generateMutation.isError && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
                 {generateMutation.error instanceof Error
                   ? generateMutation.error.message
                   : 'Ошибка при генерации резюме'}
@@ -281,36 +278,36 @@ Requirements:
         ) : (
           <div className="space-y-6">
             {/* Result */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-              <div className="bg-purple-50 px-6 py-3 border-b border-gray-200 flex items-center justify-between">
+            <div className="bg-slate-800 rounded-xl shadow-lg border border-slate-700 overflow-hidden">
+              <div className="bg-slate-800/50 px-6 py-3 border-b border-slate-700 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-purple-600" />
-                  <span className="font-medium text-gray-900">Идеальное резюме</span>
+                  <FileText className="w-5 h-5 text-brand-400" />
+                  <span className="font-medium text-white">Идеальное резюме</span>
                 </div>
                 {generateMutation.data?.cache_hit && (
-                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                  <span className="text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">
                     из кэша
                   </span>
                 )}
               </div>
-              <pre className="p-6 text-sm whitespace-pre-wrap font-mono max-h-[600px] overflow-y-auto">
+              <pre className="p-6 text-sm text-slate-300 whitespace-pre-wrap font-mono max-h-[600px] overflow-y-auto">
                 {resultText}
               </pre>
             </div>
 
             {/* Metadata */}
             {metadata && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="font-medium text-gray-900 mb-4">Информация о генерации</h3>
+              <div className="bg-slate-800 rounded-xl shadow-lg border border-slate-700 p-6">
+                <h3 className="font-medium text-white mb-4">Информация о генерации</h3>
                 <div className="grid grid-cols-2 gap-4">
                   {metadata.keywords_used.length > 0 && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">ATS ключевые слова</h4>
+                      <h4 className="text-sm font-medium text-slate-300 mb-2">ATS ключевые слова</h4>
                       <div className="flex flex-wrap gap-1">
                         {metadata.keywords_used.map((kw, i) => (
                           <span
                             key={i}
-                            className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded"
+                            className="text-xs px-2 py-1 bg-brand-900/50 text-brand-300 rounded"
                           >
                             {kw}
                           </span>
@@ -320,12 +317,12 @@ Requirements:
                   )}
                   {metadata.structure.length > 0 && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Структура</h4>
+                      <h4 className="text-sm font-medium text-slate-300 mb-2">Структура</h4>
                       <div className="flex flex-wrap gap-1">
                         {metadata.structure.map((s, i) => (
                           <span
                             key={i}
-                            className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded"
+                            className="text-xs px-2 py-1 bg-slate-700 text-slate-300 rounded"
                           >
                             {s}
                           </span>
@@ -336,8 +333,8 @@ Requirements:
                 </div>
                 {metadata.assumptions.length > 0 && (
                   <div className="mt-4">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Допущения</h4>
-                    <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                    <h4 className="text-sm font-medium text-slate-300 mb-2">Допущения</h4>
+                    <ul className="list-disc list-inside text-sm text-slate-400 space-y-1">
                       {metadata.assumptions.map((a, i) => (
                         <li key={i}>{a}</li>
                       ))}
@@ -367,7 +364,7 @@ Requirements:
             <p>Сохранить идеальное резюме в историю версий?</p>
             <input
               type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
               placeholder="Название версии (опционально)"
               value={versionTitle}
               onChange={(e) => setVersionTitle(e.target.value)}

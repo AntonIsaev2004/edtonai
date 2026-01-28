@@ -154,6 +154,10 @@ export default function VacancyEditor({ data, onChange, readonly = false }: Vaca
 // Helper Components
 // ========================================
 
+// ========================================
+// Helper Components
+// ========================================
+
 function Section({
   title,
   expanded,
@@ -166,16 +170,16 @@ function Section({
   children: React.ReactNode
 }) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full px-4 py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors"
+        className="w-full px-4 py-3 flex items-center justify-between bg-slate-800/50 hover:bg-slate-700/50 transition-colors border-b border-slate-700/50"
       >
-        <span className="font-medium text-gray-900">{title}</span>
+        <span className="font-medium text-white">{title}</span>
         {expanded ? (
-          <ChevronUp className="w-5 h-5 text-gray-500" />
+          <ChevronUp className="w-5 h-5 text-slate-400" />
         ) : (
-          <ChevronDown className="w-5 h-5 text-gray-500" />
+          <ChevronDown className="w-5 h-5 text-slate-400" />
         )}
       </button>
       {expanded && <div className="p-4">{children}</div>}
@@ -196,12 +200,13 @@ function InputField({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-slate-300 mb-1">{label}</label>
       <input
         type="text"
-        className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${
-          readonly ? 'bg-gray-50 cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-        }`}
+        className={`w-full px-3 py-2 border rounded-lg transition-colors ${readonly
+          ? 'bg-slate-900/50 border-slate-700 cursor-not-allowed text-slate-400'
+          : 'bg-slate-900 border-slate-700 text-white focus:ring-2 focus:ring-brand-500 focus:border-transparent placeholder:text-slate-500'
+          }`}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         readOnly={readonly}
@@ -271,7 +276,7 @@ function TagEditor({
         <div className="flex gap-2">
           <input
             type="text"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 px-3 py-2 border border-slate-700 bg-slate-900 text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent placeholder:text-slate-500"
             placeholder={placeholder}
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -361,7 +366,7 @@ function VacancySkillTagEditor({
         <div className="flex gap-2">
           <input
             type="text"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 px-3 py-2 border border-slate-700 bg-slate-900 text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent placeholder:text-slate-500"
             placeholder={placeholder}
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -424,19 +429,19 @@ function ListEditor({
       <ul className="space-y-2">
         {items.map((item, index) => (
           <li key={index} className="flex items-center gap-2">
-            <span className="text-gray-400">•</span>
+            <span className="text-slate-500">•</span>
             {readonly ? (
-              <span className="flex-1 text-gray-700">{item}</span>
+              <span className="flex-1 text-slate-300">{item}</span>
             ) : (
               <input
                 type="text"
-                className="flex-1 px-2 py-1 border border-transparent hover:border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 px-2 py-1 border border-transparent hover:border-slate-600 rounded bg-transparent text-white focus:bg-slate-900 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-colors"
                 value={item}
                 onChange={(e) => handleUpdate(index, e.target.value)}
               />
             )}
             {!readonly && (
-              <button onClick={() => handleRemove(index)} className="text-red-500 hover:text-red-700">
+              <button onClick={() => handleRemove(index)} className="text-red-400 hover:text-red-300">
                 <X className="w-4 h-4" />
               </button>
             )}
@@ -447,7 +452,7 @@ function ListEditor({
         <div className="flex gap-2">
           <input
             type="text"
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 px-3 py-2 border border-slate-700 bg-slate-900 text-white rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent placeholder:text-slate-500"
             placeholder={placeholder}
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -455,7 +460,7 @@ function ListEditor({
           />
           <button
             onClick={handleAdd}
-            className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-3 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-500"
           >
             <Plus className="w-4 h-4" />
           </button>

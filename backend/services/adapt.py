@@ -9,7 +9,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.ai import DeepSeekProvider
+from backend.ai.factory import get_ai_provider
 from backend.core.config import settings
 from backend.prompts import GENERATE_UPDATED_RESUME_PROMPT
 from backend.repositories import (
@@ -65,7 +65,7 @@ class AdaptResumeService:
         self.resume_service = ResumeService(session)
         self.vacancy_service = VacancyService(session)
         self.match_service = MatchService(session)
-        self.ai_provider = DeepSeekProvider()
+        self.ai_provider = get_ai_provider()
         self.logger = logging.getLogger(__name__)
 
     def _compute_adapt_hash(

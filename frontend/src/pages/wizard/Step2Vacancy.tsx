@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { Briefcase, Loader2, ArrowRight, ArrowLeft, Edit3, Save, Check } from 'lucide-react'
+import { Briefcase, Loader2, ArrowRight, ArrowLeft, Edit3, Save, Check, Link as LinkIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useWizard } from '@/context/WizardContext'
 import { parseVacancy, updateVacancy } from '@/api'
 import { Button, TextAreaWithCounter } from '@/components'
@@ -12,6 +13,7 @@ const MAX_CHARS = 10000
 type Mode = 'input' | 'parsed'
 
 export default function Step2Vacancy() {
+  const { t } = useTranslation()
   const {
     state,
     setVacancyText,
@@ -22,14 +24,15 @@ export default function Step2Vacancy() {
   } = useWizard()
   const [mode, setMode] = useState<Mode>(state.parsedVacancy ? 'parsed' : 'input')
   const [localText, setLocalText] = useState(state.vacancyText)
+  const [url, setUrl] = useState('')
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
 
   // Parse mutation
   const parseMutation = useMutation({
-    mutationFn: () => parseVacancy({ vacancy_text: localText }),
+    mutationFn: () => parseVacancy({ vacancy_text: localText, url: url || undefined }),
     onSuccess: (data) => {
-      setVacancyText(localText)
+      setVacancyText(localText || `(Vacancy parsed from: ${url})`)
       setVacancyData(data.vacancy_id, data.parsed_vacancy)
       setMode('parsed')
       setHasUnsavedChanges(false)
@@ -51,6 +54,7 @@ export default function Step2Vacancy() {
   })
 
   const handleParse = () => {
+    if (!localText && !url) return
     parseMutation.mutate()
   }
 
@@ -74,60 +78,84 @@ export default function Step2Vacancy() {
     setSaveSuccess(false)
   }
 
-  const isParseDisabled = localText.length < 10 || localText.length > MAX_CHARS
+  const isParseDisabled = (!localText && !url) || (localText.length > 0 && (localText.length < 10 || localText.length > MAX_CHARS))
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Вакансия</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('wizard.steps.vacancy')}</h1>
           <p className="text-gray-500 mt-1">
             {mode === 'input'
-              ? 'Вставьте текст вакансии для парсинга'
-              : 'Проверьте и отредактируйте распознанные данные'}
+              ? t('wizard.step2.description')
+              : t('wizard.step1.description')} {/* Using generic description or add specific if needed */}
           </p>
         </div>
         {mode === 'parsed' && (
           <Button variant="outline" onClick={handleEditText}>
             <Edit3 className="w-4 h-4 mr-2" />
-            Изменить текст
+            {t('common.back')}
           </Button>
         )}
       </div>
 
       {/* Content */}
       {mode === 'input' ? (
-        <div className="space-y-4">
+        <div className="space-y-6">
+
+          {/* URL Input */}
+          <div className="bg-slate-800 p-4 border border-slate-700 rounded-lg shadow-sm">
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              {t('wizard.step2.import_url')}
+            </label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <LinkIcon className="h-4 w-4 text-slate-400" />
+                </div>
+                <input
+                  type="url"
+                  className="block w-full pl-10 pr-3 py-2 border border-slate-600 rounded-md leading-5 bg-slate-900 text-white placeholder-slate-500 focus:outline-none focus:placeholder-slate-400 focus:ring-1 focus:ring-brand-500 focus:border-brand-500 sm:text-sm"
+                  placeholder="https://hh.ru/vacancy/..."
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  disabled={localText.length > 0}
+                />
+              </div>
+            </div>
+            {localText.length > 0 && (
+              <p className="text-xs text-orange-500 mt-2">
+                * Очистите поле текста ниже, чтобы использовать ссылку
+              </p>
+            )}
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-gray-500">{t('wizard.step1.text_tab')}</span>
+            </div>
+          </div>
+
           <TextAreaWithCounter
             value={localText}
-            onChange={setLocalText}
+            onChange={(val) => {
+              setLocalText(val)
+              if (val.length > 0) setUrl('') // Clear URL if text is entered
+            }}
             maxLength={MAX_CHARS}
-            label="Текст вакансии"
-            placeholder="Вставьте текст вакансии здесь...
-
-Например:
-Senior Backend Developer
-Компания: ООО «Инновации»
-
-Требования:
-- Python 3+ (обязательно)
-- FastAPI или Django (обязательно)
-- PostgreSQL (обязательно)
-- Docker, Kubernetes (желательно)
-- Опыт от 3 лет
-
-Обязанности:
-- Разработка backend-сервисов
-- Проектирование API
-- Code review"
-            minHeight={400}
+            label={t('wizard.step2.description')}
+            placeholder={t('wizard.step2.placeholder')}
+            minHeight={300}
           />
 
           <div className="flex justify-between">
             <Button variant="outline" onClick={goToPrevStep}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Назад
+              {t('wizard.step2.back')}
             </Button>
             <Button
               onClick={handleParse}
@@ -137,12 +165,12 @@ Senior Backend Developer
               {parseMutation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Парсинг...
+                  {t('wizard.step1.analyzing')}
                 </>
               ) : (
                 <>
                   <Briefcase className="w-4 h-4 mr-2" />
-                  Распознать вакансию
+                  {t('wizard.step2.analyze_button')}
                 </>
               )}
             </Button>
@@ -152,7 +180,7 @@ Senior Backend Developer
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
               {parseMutation.error instanceof Error
                 ? parseMutation.error.message
-                : 'Ошибка при парсинге вакансии'}
+                : t('common.error')}
             </div>
           )}
         </div>
@@ -168,13 +196,13 @@ Senior Backend Developer
           <div className="flex justify-between">
             <Button variant="outline" onClick={goToPrevStep}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Назад
+              {t('wizard.step2.back')}
             </Button>
             <div className="flex gap-3">
               <Button variant="outline" onClick={handleEditText}>
-                Изменить текст
+                {t('common.back')}
               </Button>
-              
+
               {/* Separate Save button */}
               <Button
                 variant="outline"
@@ -187,22 +215,22 @@ Senior Backend Developer
                 ) : saveSuccess ? (
                   <>
                     <Check className="w-4 h-4 mr-2 text-green-600" />
-                    Сохранено
+                    {t('common.success')}
                   </>
                 ) : (
                   <>
                     <Save className="w-4 h-4 mr-2" />
-                    Сохранить
+                    {t('common.save') || 'Save'}
                   </>
                 )}
               </Button>
-              
+
               {/* Next button (navigation only) */}
               <Button
                 onClick={handleNext}
                 className="min-w-[150px]"
               >
-                Далее
+                {t('wizard.step1.next')}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
@@ -213,7 +241,7 @@ Senior Backend Developer
       {/* Cache indicator */}
       {parseMutation.data?.cache_hit && (
         <div className="text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
-          ✓ Результат получен из кэша
+          ✓ {t('common.success')} (Cache)
         </div>
       )}
     </div>

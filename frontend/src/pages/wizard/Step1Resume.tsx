@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
-import { FileText, Loader2, ArrowRight, Edit3, Save, Check } from 'lucide-react'
+import { FileText, Loader2, ArrowRight, Edit3, Save, Check, UploadCloud, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useWizard } from '@/context/WizardContext'
 import { parseResume, updateResume } from '@/api'
 import { Button, TextAreaWithCounter } from '@/components'
 import ResumeEditor from '@/components/ResumeEditor'
+import { extractTextFromFile } from '@/lib/file-processing'
 import type { ParsedResume } from '@/api'
 
 const MAX_CHARS = 15000
@@ -12,15 +15,46 @@ const MAX_CHARS = 15000
 type Mode = 'input' | 'parsed'
 
 export default function Step1Resume() {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
   const { state, setResumeText, setResumeData, updateParsedResume, goToNextStep } = useWizard()
   const [mode, setMode] = useState<Mode>(state.parsedResume ? 'parsed' : 'input')
   const [localText, setLocalText] = useState(state.resumeText)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [isProcessingFile, setIsProcessingFile] = useState(false)
+  const [fileError, setFileError] = useState<string | null>(null)
+
+  // File upload handler
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0]
+    if (!file) return
+
+    setIsProcessingFile(true)
+    setFileError(null)
+
+    try {
+      const text = await extractTextFromFile(file)
+      if (text.length < 50) {
+        throw new Error(t('common.error')) // Simplification or specific error key
+      }
+      if (text.length > MAX_CHARS) {
+        setLocalText(text.slice(0, MAX_CHARS))
+        parseMutation.mutate(text.slice(0, MAX_CHARS))
+      } else {
+        setLocalText(text)
+        parseMutation.mutate(text)
+      }
+    } catch (err: any) {
+      setFileError(err.message || t('common.error'))
+    } finally {
+      setIsProcessingFile(false)
+    }
+  }, [t])
 
   // Parse mutation
   const parseMutation = useMutation({
-    mutationFn: () => parseResume({ resume_text: localText }),
+    mutationFn: (text: string = localText) => parseResume({ resume_text: typeof text === 'string' ? text : localText }),
     onSuccess: (data) => {
       setResumeText(localText)
       setResumeData(data.resume_id, data.parsed_resume)
@@ -44,7 +78,7 @@ export default function Step1Resume() {
   })
 
   const handleParse = () => {
-    parseMutation.mutate()
+    parseMutation.mutate(localText)
   }
 
   const handleEditText = () => {
@@ -67,6 +101,51 @@ export default function Step1Resume() {
     setSaveSuccess(false)
   }
 
+  // Simple Drag & Drop Area
+  const FileUploadArea = () => (
+    <div
+      className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer relative"
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        e.preventDefault()
+        onDrop(Array.from(e.dataTransfer.files))
+      }}
+      onClick={() => document.getElementById('file-input')?.click()}
+    >
+      <input
+        id="file-input"
+        type="file"
+        className="hidden"
+        accept=".pdf,.docx,.txt"
+        onChange={(e) => e.target.files && onDrop(Array.from(e.target.files))}
+      />
+
+      {isProcessingFile ? (
+        <div className="flex flex-col items-center justify-center py-4">
+          <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-2" />
+          <p className="text-sm text-gray-600">{t('wizard.step1.analyzing')}</p>
+        </div>
+      ) : (
+        <>
+          <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-3">
+            <UploadCloud className="w-6 h-6 text-blue-600" />
+          </div>
+          <h3 className="text-sm font-medium text-gray-900">{t('wizard.step1.upload_tab')}</h3>
+          <p className="text-xs text-gray-500 mt-1">
+            {t('wizard.step1.supports')}
+          </p>
+        </>
+      )}
+
+      {fileError && (
+        <div className="absolute inset-x-0 bottom-0 p-2 bg-red-50 text-red-600 text-xs rounded-b-lg border-t border-red-100 flex items-center justify-center">
+          <X className="w-3 h-3 mr-1" />
+          {fileError}
+        </div>
+      )}
+    </div>
+  )
+
   const isParseDisabled = localText.length < 10 || localText.length > MAX_CHARS
 
   return (
@@ -74,17 +153,17 @@ export default function Step1Resume() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Резюме</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('wizard.step1.title')}</h1>
           <p className="text-gray-500 mt-1">
             {mode === 'input'
-              ? 'Вставьте текст резюме для парсинга'
-              : 'Проверьте и отредактируйте распознанные данные'}
+              ? t('wizard.step1.description')
+              : t('wizard.step1.description')}
           </p>
         </div>
         {mode === 'parsed' && (
           <Button variant="outline" onClick={handleEditText}>
             <Edit3 className="w-4 h-4 mr-2" />
-            Изменить текст
+            {t('common.back')}
           </Button>
         )}
       </div>
@@ -92,27 +171,36 @@ export default function Step1Resume() {
       {/* Content */}
       {mode === 'input' ? (
         <div className="space-y-4">
+
+          {/* Include File Upload Area here */}
+          <FileUploadArea />
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-gray-500">{t('wizard.step1.text_tab')}</span>
+            </div>
+          </div>
+
           <TextAreaWithCounter
             value={localText}
             onChange={setLocalText}
             maxLength={MAX_CHARS}
-            label="Текст резюме"
-            placeholder="Вставьте текст резюме здесь...
-
-Например:
-Иван Петров
-Senior Backend Developer
-
-Опыт работы:
-- ООО «Технологии», Backend Developer, 2020-2023
-  • Разработал микросервисную архитектуру
-  • Оптимизировал производительность API
-
-Навыки: Python, FastAPI, PostgreSQL, Docker, Kubernetes"
-            minHeight={400}
+            label={t('wizard.steps.resume')}
+            placeholder={t('wizard.step1.manual_placeholder')}
+            minHeight={300}
           />
 
-          <div className="flex justify-end">
+          <div className="flex justify-between items-center">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/')}
+              className="text-slate-400 hover:text-white"
+            >
+              {t('common.back')}
+            </Button>
             <Button
               onClick={handleParse}
               disabled={isParseDisabled || parseMutation.isPending}
@@ -121,12 +209,12 @@ Senior Backend Developer
               {parseMutation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Парсинг...
+                  {t('wizard.step1.analyzing')}
                 </>
               ) : (
                 <>
                   <FileText className="w-4 h-4 mr-2" />
-                  Распознать резюме
+                  {t('wizard.step1.next')}
                 </>
               )}
             </Button>
@@ -136,7 +224,7 @@ Senior Backend Developer
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
               {parseMutation.error instanceof Error
                 ? parseMutation.error.message
-                : 'Ошибка при парсинге резюме'}
+                : t('common.error')}
             </div>
           )}
         </div>
@@ -152,15 +240,15 @@ Senior Backend Developer
           {/* Unsaved changes indicator */}
           {hasUnsavedChanges && (
             <div className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
-              ⚠ Есть несохранённые изменения
+              ⚠ {t('wizard.step4.pending')}
             </div>
           )}
 
           <div className="flex justify-between gap-3">
             <Button variant="outline" onClick={handleEditText}>
-              Изменить текст
+              {t('common.back')}
             </Button>
-            
+
             <div className="flex gap-3">
               {/* Separate Save button */}
               <Button
@@ -174,22 +262,22 @@ Senior Backend Developer
                 ) : saveSuccess ? (
                   <>
                     <Check className="w-4 h-4 mr-2 text-green-600" />
-                    Сохранено
+                    {t('common.success')}
                   </>
                 ) : (
                   <>
                     <Save className="w-4 h-4 mr-2" />
-                    Сохранить
+                    {t('common.save')}
                   </>
                 )}
               </Button>
-              
+
               {/* Next button (navigation only) */}
               <Button
                 onClick={handleNext}
                 className="min-w-[150px]"
               >
-                Далее
+                {t('wizard.step1.next')}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
@@ -200,7 +288,7 @@ Senior Backend Developer
       {/* Cache indicator */}
       {parseMutation.data?.cache_hit && (
         <div className="text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
-          ✓ Результат получен из кэша
+          ✓ {t('common.success')} (Cache)
         </div>
       )}
     </div>

@@ -1,0 +1,100 @@
+{
+    "header": {
+        "title": "Resume Wizard",
+        "subtitle": "AI-powered resume optimization"
+    },
+    "home": {
+        "title": "Create the Perfect Resume for Any Vacancy",
+        "subtitle": "Upload your current resume, paste the job description, and our AI will adapt your CV to get you invited for an interview.",
+        "start_button": "Start Optimization",
+        "ideal_title": "Ideal Resume",
+        "ideal_subtitle": "Generation from scratch",
+        "ideal_description": "Create an ideal resume for a target vacancy. AI will generate structure and content optimized for employer requirements.",
+        "steps_data": "Your Data",
+        "steps_vacancy": "Vacancy",
+        "steps_generation": "Generation",
+        "steps_editing": "Editing"
+    },
+    "wizard": {
+        "steps": {
+            "resume": "Resume",
+            "vacancy": "Vacancy",
+            "analysis": "Analysis",
+            "improvement": "Improvement",
+            "subtitle_parsing": "Parsing & Editing",
+            "subtitle_analysis": "Matching",
+            "subtitle_improvement": "Applying Recommendations"
+        },
+        "page_title": "Resume Adaptation",
+        "home_tooltip": "Back to Home",
+        "step1": {
+            "title": "Upload Your Resume",
+            "description": "Upload your current resume in PDF or DOCX format, or paste the text manually.",
+            "upload_tab": "Upload File",
+            "text_tab": "Paste Text",
+            "drag_drop": "Drag and drop file here, or click to select",
+            "supports": "Supports PDF, DOCX (max 10MB)",
+            "analyzing": "Analyzing file...",
+            "manual_placeholder": "Paste your resume text here...",
+            "next": "Next: Vacancy"
+        },
+        "step2": {
+            "title": "Vacancy Description",
+            "import_url": "Import from URL",
+            "description": "Found a dream job? Paste the full vacancy description here so the AI knows what to target.",
+            "placeholder": "Paste vacancy text here (responsibilities, requirements, etc.)...",
+            "back": "Back",
+            "analyze_button": "Analyze Match"
+        },
+        "step3": {
+            "title": "Analysis Results",
+            "description": "Here is how well your resume matches the vacancy right now.",
+            "score": "Match Score",
+            "score_skills": "Skills Match",
+            "score_experience": "Experience",
+            "score_ats": "ATS Format",
+            "score_period": "Employment",
+            "required_skills": "Required Skills",
+            "preferred_skills": "Preferred Skills",
+            "gaps": "Critical Gaps found",
+            "no_data": "No data available",
+            "improve_button": "Improve Resume"
+        },
+        "step4": {
+            "title": "Resume Improvement",
+            "result_title": "Optimized Result",
+            "description": "Select improvements to apply to your resume.",
+            "result_description": "Review and confirm changes.",
+            "selected": "Selected",
+            "select_all": "Select All",
+            "deselect_all": "Deselect All",
+            "apply_button": "Apply Improvements",
+            "applying": "Applying...",
+            "confirmed": "Confirmed",
+            "pending": "Pending",
+            "confirm_all": "Confirm All",
+            "changes_review": "Review Changes:",
+            "before": "Before:",
+            "after": "After:",
+            "change_confirmed": "Confirmed",
+            "change_rejected": "Rejected",
+            "back_edit": "Change Selection",
+            "apply_final": "Finalize",
+            "score_new": "New Match Score",
+            "download_docx": "DOCX",
+            "preview_pdf": "PDF Preview",
+            "hh_export": "HH.ru",
+            "start_over": "Start Over",
+            "copy": "Copy Resume",
+            "copied": "Copied!",
+            "continue": "Continue Improving"
+        }
+    },
+    "common": {
+        "loading": "Loading...",
+        "error": "Error",
+        "success": "Success",
+        "back": "Back",
+        "footer": "Powered by AI • Your data is not saved after session"
+    }
+}

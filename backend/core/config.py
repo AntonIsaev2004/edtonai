@@ -37,13 +37,17 @@ class Settings(BaseSettings):
     @property
     def database_url(self) -> str:
         """Build DATABASE_URL from separate credentials."""
+        # Allow direct override if set (e.g. for Supabase with special flags)
+        if hasattr(self, "DATABASE_URL") and self.DATABASE_URL:
+            return self.DATABASE_URL
+            
         return (
             f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
 
     # AI provider
-    ai_provider: str
+    ai_provider: str = "deepseek"
     deepseek_api_key: str
     deepseek_base_url: str
     ai_model: str

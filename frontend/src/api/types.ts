@@ -132,6 +132,7 @@ export interface ResumeDetailResponse {
 // Vacancy Parse Response
 export interface VacancyParseRequest {
   vacancy_text: string
+  url?: string
 }
 
 export interface VacancyParseResponse {

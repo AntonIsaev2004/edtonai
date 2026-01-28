@@ -1,6 +1,9 @@
+
 export { default as Workspace } from './Workspace'
 export { default as History } from './History'
 export { default as Compare } from './Compare'
 export { default as WizardPage } from './WizardPage'
 export { default as HomePage } from './HomePage'
 export { default as IdealResumePage } from './IdealResumePage'
+export { default as LoginPage } from './auth/LoginPage'
+export { default as RegisterPage } from './auth/RegisterPage'

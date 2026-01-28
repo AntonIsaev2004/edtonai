@@ -2,15 +2,18 @@ import WizardLayout, { type WizardStep } from '@/components/WizardLayout'
 import { WizardProvider, useWizard } from '@/context/WizardContext'
 import { Step1Resume, Step2Vacancy, Step3Analysis, Step4Improvement } from './wizard'
 
-const WIZARD_STEPS: WizardStep[] = [
-  { id: 1, title: 'Резюме', subtitle: 'Парсинг и редактирование' },
-  { id: 2, title: 'Вакансия', subtitle: 'Парсинг и редактирование' },
-  { id: 3, title: 'Анализ', subtitle: 'Соответствие' },
-  { id: 4, title: 'Улучшение', subtitle: 'Применение рекомендаций' },
-]
+import { useTranslation } from 'react-i18next'
 
 function WizardContent() {
   const { currentStep } = useWizard()
+  const { t } = useTranslation()
+
+  const steps: WizardStep[] = [
+    { id: 1, title: t('wizard.steps.resume'), subtitle: t('wizard.steps.subtitle_parsing') },
+    { id: 2, title: t('wizard.steps.vacancy'), subtitle: t('wizard.steps.subtitle_parsing') },
+    { id: 3, title: t('wizard.steps.analysis'), subtitle: t('wizard.steps.subtitle_analysis') },
+    { id: 4, title: t('wizard.steps.improvement'), subtitle: t('wizard.steps.subtitle_improvement') },
+  ]
 
   const renderStep = () => {
     switch (currentStep) {
@@ -28,7 +31,7 @@ function WizardContent() {
   }
 
   return (
-    <WizardLayout steps={WIZARD_STEPS} currentStep={currentStep}>
+    <WizardLayout steps={steps} currentStep={currentStep}>
       {renderStep()}
     </WizardLayout>
   )

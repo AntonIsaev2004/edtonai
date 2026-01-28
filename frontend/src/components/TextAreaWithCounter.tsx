@@ -42,11 +42,10 @@ export default function TextAreaWithCounter({
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-2">
-        <label className="text-sm font-medium text-gray-700">{label}</label>
+        <label className="text-sm font-medium text-slate-300">{label}</label>
         <span
-          className={`text-xs ${
-            isOverLimit ? 'text-red-600 font-medium' : 'text-gray-500'
-          }`}
+          className={`text-xs ${isOverLimit ? 'text-red-400 font-medium' : 'text-slate-500'
+            }`}
         >
           {charCount.toLocaleString()} / {maxLength.toLocaleString()}
         </span>
@@ -60,22 +59,19 @@ export default function TextAreaWithCounter({
           placeholder={placeholder}
           disabled={disabled}
           readOnly={readOnly}
-          className={`w-full h-full p-3 border rounded-lg text-sm font-mono leading-relaxed transition-colors ${
-            isOverLimit
-              ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-              : 'border-gray-300 focus:border-primary-500 focus:ring-primary-200'
-          } focus:outline-none focus:ring-2 ${
-            readOnly ? 'bg-gray-50 cursor-default' : 'bg-white'
-          } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`w-full h-full p-3 border rounded-lg text-sm font-mono leading-relaxed transition-colors ${isOverLimit
+              ? 'border-red-500/50 focus:border-red-500 focus:ring-red-900/50 bg-slate-800 text-white'
+              : 'border-slate-700 focus:border-brand-500 focus:ring-brand-900/50 bg-slate-800 text-white placeholder:text-slate-500'
+            } focus:outline-none focus:ring-2 ${readOnly ? 'bg-slate-900 cursor-default opacity-80' : ''
+            } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           style={{ minHeight: `${minHeight}px` }}
         />
 
         {/* Progress indicator */}
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-100 rounded-b-lg overflow-hidden">
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-700 rounded-b-lg overflow-hidden">
           <div
-            className={`h-full transition-all duration-300 ${
-              isOverLimit ? 'bg-red-500' : percentage > 80 ? 'bg-yellow-500' : 'bg-primary-500'
-            }`}
+            className={`h-full transition-all duration-300 ${isOverLimit ? 'bg-red-500' : percentage > 80 ? 'bg-yellow-500' : 'bg-brand-500'
+              }`}
             style={{ width: `${percentage}%` }}
           />
         </div>
