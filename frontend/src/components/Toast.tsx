@@ -1,19 +1,12 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
+import { useState, useCallback, ReactNode } from 'react'
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react'
-
-type ToastType = 'success' | 'error' | 'info'
+import { ToastContext, type ToastType } from '@/context/ToastContext'
 
 interface Toast {
   id: number
   type: ToastType
   message: string
 }
-
-interface ToastContextValue {
-  showToast: (type: ToastType, message: string) => void
-}
-
-const ToastContext = createContext<ToastContextValue | null>(null)
 
 let toastId = 0
 
@@ -72,26 +65,7 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   )
 }
 
-export function useToast() {
-  const context = useContext(ToastContext)
-  if (!context) {
-    throw new Error('useToast must be used within ToastProvider')
-  }
-  return context
-}
-
 // Standalone Toaster component that can be used without context
 export function Toaster() {
   return <ToastProvider>{null}</ToastProvider>
-}
-
-// Global toast function for use outside React components
-let globalShowToast: ((type: ToastType, message: string) => void) | null = null
-
-export function setGlobalToast(fn: (type: ToastType, message: string) => void) {
-  globalShowToast = fn
-}
-
-export function toast(type: ToastType, message: string) {
-  globalShowToast?.(type, message)
 }

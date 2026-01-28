@@ -1,8 +1,13 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
+<<<<<<< HEAD
 import { Sparkles, Loader2, ArrowLeft, Copy, RotateCcw, Check, X, AlertTriangle, CheckCircle, XCircle, TrendingUp, TrendingDown, Minus, Eye, DownloadCloud } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useWizard } from '@/context/WizardContext'
+=======
+import { Sparkles, Loader2, ArrowLeft, Copy, RotateCcw, Check, X, AlertTriangle, CheckCircle, XCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { useWizard } from '@/hooks'
+>>>>>>> 16a6e99ef33840da0c73c953b410d723f95cca74
 import { adaptResume, createVersion, analyzeMatch } from '@/api'
 import { Button, CheckboxList, ConfirmDialog } from '@/components'
 import PdfPreview from '@/components/pdf/PdfPreview'

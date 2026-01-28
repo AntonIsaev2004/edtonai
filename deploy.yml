@@ -1,0 +1,90 @@
+---
+- name: Deploy EdtonAI Application
+  hosts: localhost
+  connection: local
+  become: false
+  
+  vars:
+    app_dir: "{{ lookup('env', 'EDTONAI_PATH') | default(ansible_env.PWD, true) }}"
+    
+  tasks:
+    - name: Check if Docker is installed
+      command: docker --version
+      register: docker_check
+      ignore_errors: yes
+    
+    - name: Fail if Docker is not installed
+      fail:
+        msg: "Docker is not installed. Please install Docker first."
+      when: docker_check.rc != 0
+    
+    - name: Check if app directory exists
+      stat:
+        path: "{{ app_dir }}"
+      register: app_dir_stat
+    
+    - name: Fail if app directory does not exist
+      fail:
+        msg: "App directory {{ app_dir }} does not exist. Please clone the repository first."
+      when: not app_dir_stat.stat.exists
+    
+    - name: Pull latest changes from GitHub
+      command: "git -C {{ app_dir }} pull origin main"
+      register: git_pull
+      changed_when: "'Already up to date' not in git_pull.stdout"
+    
+    - name: Copy .env.example to .env if .env doesn't exist
+      command: "cp {{ app_dir }}/.env.example {{ app_dir }}/.env"
+      args:
+        creates: "{{ app_dir }}/.env"
+    
+    - name: Print reminder to update .env
+      debug:
+        msg: |
+          ⚠️  IMPORTANT: Update your .env file with:
+          - POSTGRES_PASSWORD
+          - DEEPSEEK_API_KEY
+          - Other sensitive variables
+          File location: {{ app_dir }}/.env
+    
+    - name: Stop existing Docker containers
+      command: "docker-compose -f {{ app_dir }}/docker-compose.yml down"
+      ignore_errors: yes
+      changed_when: false
+    
+    - name: Build and start Docker containers
+      command: "docker-compose -f {{ app_dir }}/docker-compose.yml up -d --build"
+      environment:
+        COMPOSE_PROJECT_NAME: edtonai
+    
+    - name: Wait for services to be healthy
+      pause:
+        seconds: 10
+    
+    - name: Check backend health
+      uri:
+        url: http://localhost:8000/v1/health
+        method: GET
+        status_code: 200
+      register: backend_health
+      until: backend_health.status == 200
+      retries: 5
+      delay: 5
+      ignore_errors: yes
+    
+    - name: Print deployment status
+      debug:
+        msg: |
+          ✅ EdtonAI deployment complete!
+          
+          Frontend: http://localhost:3000
+          Backend:  http://localhost:8000
+          Swagger:  http://localhost:8000/docs
+    
+    - name: Show docker-compose logs
+      command: "docker-compose -f {{ app_dir }}/docker-compose.yml logs --tail=20"
+      register: docker_logs
+    
+    - name: Print recent logs
+      debug:
+        msg: "{{ docker_logs.stdout_lines }}"
