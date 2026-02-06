@@ -1,0 +1,99 @@
+steps:
+  # ==========================================
+  # 1. Backend: Build & Push
+  # ==========================================
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Build Backend'
+    args: ['build', '-t', '$_AR_HOSTNAME/$PROJECT_ID/$_AR_REPO/backend', 'backend/']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Push Backend'
+    args: ['push', '$_AR_HOSTNAME/$PROJECT_ID/$_AR_REPO/backend']
+
+  # ==========================================
+  # 2. Backend: Deploy
+  # ==========================================
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'Deploy Backend'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '$_BACKEND_SERVICE_NAME'
+      - '--image'
+      - '$_AR_HOSTNAME/$PROJECT_ID/$_AR_REPO/backend'
+      - '--region'
+      - '$_DEPLOY_REGION'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '8000'
+      - '--set-env-vars'
+      - 'POSTGRES_USER=$_POSTGRES_USER,POSTGRES_PASSWORD=$_POSTGRES_PASSWORD,POSTGRES_HOST=$_POSTGRES_HOST,POSTGRES_PORT=$_POSTGRES_PORT,POSTGRES_DB=$_POSTGRES_DB,AI_PROVIDER=$_AI_PROVIDER,DEEPSEEK_API_KEY=$_DEEPSEEK_API_KEY,DEEPSEEK_BASE_URL=$_DEEPSEEK_BASE_URL,AI_MODEL=$_AI_MODEL,AI_TIMEOUT_SECONDS=120,AI_MAX_RETRIES=3,AI_TEMPERATURE=0.3,AI_MAX_TOKENS=8192,LOG_LEVEL=INFO'
+
+  # ==========================================
+  # 3. Frontend: Build & Push
+  # ==========================================
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Build Frontend'
+    args:
+      - 'build'
+      - '-t'
+      - '$_AR_HOSTNAME/$PROJECT_ID/$_AR_REPO/frontend'
+      - '--build-arg'
+      - 'VITE_SUPABASE_URL=$_VITE_SUPABASE_URL'
+      - '--build-arg' # Note: Passing args like this to avoid shell parsing issues with special chars
+      - 'VITE_SUPABASE_ANON_KEY=$_VITE_SUPABASE_ANON_KEY'
+      - 'frontend/'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Push Frontend'
+    args: ['push', '$_AR_HOSTNAME/$PROJECT_ID/$_AR_REPO/frontend']
+
+  # ==========================================
+  # 4. Frontend: Deploy
+  # ==========================================
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'Deploy Frontend'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '$_FRONTEND_SERVICE_NAME'
+      - '--image'
+      - '$_AR_HOSTNAME/$PROJECT_ID/$_AR_REPO/frontend'
+      - '--region'
+      - '$_DEPLOY_REGION'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '80'
+      - '--set-env-vars'
+      - 'BACKEND_URL=$_BACKEND_URL'
+
+images:
+  - '$_AR_HOSTNAME/$PROJECT_ID/$_AR_REPO/backend'
+  - '$_AR_HOSTNAME/$PROJECT_ID/$_AR_REPO/frontend'
+
+substitutions:
+  _DEPLOY_REGION: us-east1
+  _AR_HOSTNAME: us-east1-docker.pkg.dev
+  _AR_REPO: edtonai-repo
+  _BACKEND_SERVICE_NAME: edtonai-backend
+  _FRONTEND_SERVICE_NAME: edtonai-frontend
+  # Defaults (Non-secret)
+  _POSTGRES_USER: postgres.qwxfmnhkgepyksdkibvw
+  _POSTGRES_HOST: aws-1-us-east-1.pooler.supabase.com
+  _POSTGRES_PORT: '6543'
+  _POSTGRES_DB: postgres
+  _AI_PROVIDER: deepseek
+  _DEEPSEEK_BASE_URL: https://api.deepseek.com/v1
+  _AI_MODEL: deepseek-chat
+  # !!! IMPORTANT: The following secrets must be set in the Cloud Build Trigger settings !!!
+  # _POSTGRES_PASSWORD
+  # _DEEPSEEK_API_KEY
+  # _VITE_SUPABASE_URL
+  # _VITE_SUPABASE_ANON_KEY
+  # _BACKEND_URL (Should be https://edtonai-backend-985259530508.us-east1.run.app)
